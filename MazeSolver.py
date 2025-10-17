@@ -1,7 +1,7 @@
 import sys
 
 class Node():
-	def _init_(self, state, parent, action):
+	def __init__(self, state, parent, action):
 		self.state = state
 		self.parent = parent
 		self.action = action
@@ -76,143 +76,143 @@ class Maze():
 						row.append(True)
 				except IndexError:
 					row.append(False)
-				self.walls.append(row)	
+			self.walls.append(row)	
 
-			self.solution = None
+		self.solution = None
 
-		def print(self):
-			solution = self.solution[1] if self.solution is not None else None
+	def print(self):
+		solution = self.solution[1] if self.solution is not None else None
+		print()
+		for i, row in enumerate(self.walls):
+			for j, col in enumerate(row):
+				if col:
+					print("█", end="")
+				elif (i, j) == self.start:
+					print("A", end="")
+				elif (i, j) == self.goal:
+					print("B", end="")
+				elif solution is not None and (i, j) in solution:
+					print("*", end="")
+				else:
+					print(" ", end="")
 			print()
-				for i, row in enumerate(self.walls):
-					for j, col in enumerate(row):
-						if col:
-							print("█", end="")
-						elif (i, j) == self.start:
-							print("A", end="")
-						elif (i, j) == self.goal:
-							print("B", end="")
-						elif solution is not None and (i, j) in solution:
-							print("*", end="")
-						else:
-							print(" ", end="")
-					print()
-				print()
+		print()
 
-			def neighbors(self, state):
-				row, col = state
-				candidates = [
-					("up", (row - 1, col)),
-					("down", (row + 1, col)),
-					("left", (row, col - 1)),
-					("right", (row, col + 1))
-				]
+	def neighbors(self, state):
+		row, col = state
+		candidates = [
+			("up", (row - 1, col)),
+			("down", (row + 1, col)),
+			("left", (row, col - 1)),
+			("right", (row, col + 1))
+		]
 
-				result = []
-				for action, (r,c) in candidates:
-					if 0 <= r < self.height and 0 <= c < self.width and not self.walls[r][c]:
-						result.append((action, (r,c)))
-				return result
+		result = []
+		for action, (r,c) in candidates:
+			if 0 <= r < self.height and 0 <= c < self.width and not self.walls[r][c]:
+				result.append((action, (r,c)))
+		return result
 
 
-			def solve(self):
-				#Attempts to find solution to maze
+	def solve(self):
+		#Attempts to find solution to maze
 
-				#Keep track of number of states explored
-				self.num_explored = 0
+		#Keep track of number of states explored
+		self.num_explored = 0
 
-				#Initialize frontier to just the starting position
-				start = Node(state=self.start, parent=None, action=None)
-				frontier = StackFrontier()
-				frontier.add(start)
+		#Initialize frontier to just the starting position
+		start = Node(state=self.start, parent=None, action=None)
+		frontier = StackFrontier()
+		frontier.add(start)
 
-				#Initialize an empty explored set
-				self.explored = set()
+		#Initialize an empty explored set
+		self.explored = set()
 
-				#Keep looping until solution found
-				while True:
-						#If nothing left in frontier, then no path
-						if frontier.empty():
-							raise Exception("No Solution")
+		#Keep looping until solution found
+		while True:
+				#If nothing left in frontier, then no path
+				if frontier.empty():
+					raise Exception("No Solution")
 
-						#Choose a node from the frontier
-						node = frontier.remove()
-						self.num_explored +=1
+				#Choose a node from the frontier
+				node = frontier.remove()
+				self.num_explored +=1
 
-						#If node is the goal, we have found a solution!
-						if node.state == self.goal:
-							action = []
-							cells = []
-							while node.parent is not None:
-								actions.append(node.action)
-								cells.append(node.state)
-								node = node.parent
-							actions.reverse()
-							cells.reverse()
-							self.solution = (actions, cells)
-							return
+				#If node is the goal, we have found a solution!
+				if node.state == self.goal:
+					actions = []
+					cells = []
+					while node.parent is not None:
+						actions.append(node.action)
+						cells.append(node.state)
+						node = node.parent
+					actions.reverse()
+					cells.reverse()
+					self.solution = (actions, cells)
+					return
 
-						#Mark node as explored
-						self.explored.add(node.state)
+				#Mark node as explored
+				self.explored.add(node.state)
 
-						#Add neighbors to frontier
-						for action, state in self.neighbors(node.state):
-							if not frontier.contains_state(state) and state not in self.explored:
-								child = Node(state=state, parent=node, action=action)
-								frontier.add(child)
+				#Add neighbors to frontier
+				for action, state in self.neighbors(node.state):
+					if not frontier.contains_state(state) and state not in self.explored:
+						child = Node(state=state, parent=node, action=action)
+						frontier.add(child)
 
-				def output_image(self, filename, show_solution=True, show_explored=False):
-    from PIL import Image, ImageDraw
-    cell_size = 50
-    cell_border = 2
+	def output_image(self, filename, show_solution=True, show_explored=False):
+	    from PIL import Image, ImageDraw
+	    cell_size = 50
+	    cell_border = 2
 
-    # Create a blank canvas
-    img = Image.new(
-        "RGBA",
-        (self.width * cell_size, self.height * cell_size),
-        "black"
-    )
-    draw = ImageDraw.Draw(img)
+	    # Create a blank canvas
+	    img = Image.new(
+	        "RGBA",
+	        (self.width * cell_size, self.height * cell_size),
+	        "black"
+	    )
+	    draw = ImageDraw.Draw(img)
 
-    solution = self.solution[1] if self.solution is not None else None
-    for i, row in enumerate(self.walls):
-        for j, col in enumerate(row):
+	    solution = self.solution[1] if self.solution is not None else None
+	    for i, row in enumerate(self.walls):
+	        for j, col in enumerate(row):
 
-            # Walls
-            if col:
-                fill = (40, 40, 40)
+	            # Walls
+	            if col:
+	                fill = (40, 40, 40)
 
-            # Start
-            elif (i, j) == self.start:
-                fill = (255, 0, 0)
+	            # Start
+	            elif (i, j) == self.start:
+	                fill = (255, 0, 0)
 
-            # Goal
-            elif (i, j) == self.goal:
-                fill = (0, 171, 28)
+	            # Goal
+	            elif (i, j) == self.goal:
+	                fill = (0, 171, 28)
 
-            # Solution
-            elif solution is not None and show_solution and (i, j) in solution:
-                fill = (220, 235, 113)
+	            # Solution
+	            elif solution is not None and show_solution and (i, j) in solution:
+	                fill = (220, 235, 113)
 
-            # Explored
-            elif solution is not None and show_explored and (i, j) in self.explored:
-                fill = (212, 97, 85)
+	            # Explored
+	            elif solution is not None and show_explored and (i, j) in self.explored:
+	                fill = (212, 97, 85)
 
-            # Empty cell
-            else:
-                fill = (237, 240, 252)
+	            # Empty cell
+	            else:
+	                fill = (237, 240, 252)
 
-            # Draw cell
-            draw.rectangle(
-                ([(j * cell_size + cell_border, i * cell_size + cell_border),
-                  ((j + 1) * cell_size - cell_border, (i + 1) * cell_size - cell_border)]),
-                fill=fill
-            )
+	            # Draw cell
+	            draw.rectangle(
+	                ([(j * cell_size + cell_border, i * cell_size + cell_border),
+	                  ((j + 1) * cell_size - cell_border, (i + 1) * cell_size - cell_border)]),
+	                fill=fill
+	            )
 
-    img.save(filename)
+	    img.save(filename)
 
 
 if len(sys.argv) != 2:
-sys.exit("Usage: python maze.py maze.txt")
+	sys.exit("Usage: python maze.py maze.txt")
 
 m = Maze(sys.argv[1])
 print("Maze:")
